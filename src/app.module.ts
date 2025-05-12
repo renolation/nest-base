@@ -4,6 +4,8 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
+import {UsersModule} from "./users/user.module";
+import {AuthenticationModule} from "./authentication/authentication.module";
 
 @Module({
     imports: [
@@ -17,6 +19,7 @@ import * as Joi from 'joi';
                 username: configService.get<string>('POSTGRES_USER'),
                 password: configService.get<string>('POSTGRES_PASSWORD'),
                 database: configService.get<string>('POSTGRES_DB'),
+                autoLoadEntities: true,
                 ssl: {
                     rejectUnauthorized: false, // Needed for Neon and similar managed DBs
                 },
@@ -28,7 +31,9 @@ import * as Joi from 'joi';
                 JWT_SECRET: Joi.string().required(),
                 JWT_EXPIRATION_TIME: Joi.string().required(),
             })
-        })
+        }),
+        UsersModule,
+        AuthenticationModule
     ],
     controllers: [AppController],
     providers: [AppService],
