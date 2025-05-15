@@ -7,7 +7,7 @@ import {
     UseGuards,
     Get,
     ClassSerializerInterceptor,
-    UseInterceptors,
+    UseInterceptors, SerializeOptions,
 } from '@nestjs/common';
 import {AuthenticationService} from './authentication.service';
 import RegisterDto from './dto/register.dto';
@@ -21,6 +21,9 @@ import { UsersService } from 'src/users/user.service';
 
 @Controller('authentication')
 @UseInterceptors(ClassSerializerInterceptor)
+@SerializeOptions({
+  strategy: 'excludeAll'
+})
 export class AuthenticationController {
     constructor(
         private readonly authenticationService: AuthenticationService,

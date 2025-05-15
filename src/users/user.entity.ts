@@ -1,5 +1,5 @@
 import {Column, Entity, PrimaryGeneratedColumn} from 'typeorm';
-import {Exclude} from 'class-transformer';
+import {Exclude, Expose} from 'class-transformer';
 
 @Entity()
 class User {
@@ -7,9 +7,11 @@ class User {
     public id?: number;
 
     @Column({unique: true})
+    @Expose()
     public email: string;
 
     @Column()
+    @Expose()
     public name: string;
 
     @Column()
