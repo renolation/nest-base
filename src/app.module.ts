@@ -7,6 +7,7 @@ import * as Joi from 'joi';
 import {UsersModule} from "./users/user.module";
 import {AuthenticationModule} from "./authentication/authentication.module";
 import { PostsModule } from './posts/posts.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
     imports: [
@@ -35,7 +36,8 @@ import { PostsModule } from './posts/posts.module';
         }),
         UsersModule,
         AuthenticationModule,
-        PostsModule
+        PostsModule,
+        CategoriesModule
     ],
     controllers: [AppController],
     providers: [AppService],
