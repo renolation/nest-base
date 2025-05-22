@@ -17,12 +17,12 @@ import JwtAuthenticationGuard from './jwt-authentication.guard';
 // import {EmailConfirmationService} from '../emailConfirmation/emailConfirmation.service';
 import {ApiBody} from '@nestjs/swagger';
 import LogInDto from './dto/logIn.dto';
-import { UsersService } from 'src/users/user.service';
+import {UsersService} from 'src/users/user.service';
 
 @Controller('authentication')
 @UseInterceptors(ClassSerializerInterceptor)
 @SerializeOptions({
-  strategy: 'excludeAll'
+    strategy: 'excludeAll'
 })
 export class AuthenticationController {
     constructor(
@@ -86,5 +86,15 @@ export class AuthenticationController {
         user.password = undefined;
         return user;
     }
+
+    @UseGuards(JwtRefreshGuard)
+    @Get('refresh')
+    refresh(@Req() request: RequestWithUser) {
+        const accessTokenCookie = this.authenticationService.getCookieWithJwtAccessToken(request.user.id);
+
+        request.res.setHeader('Set-Cookie', accessTokenCookie);
+        return request.user;
+    }
+
 
 }

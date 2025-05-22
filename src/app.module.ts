@@ -1,13 +1,13 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import {Module} from '@nestjs/common';
+import {AppController} from './app.controller';
+import {AppService} from './app.service';
+import {TypeOrmModule} from '@nestjs/typeorm';
+import {ConfigModule, ConfigService} from '@nestjs/config';
 import * as Joi from 'joi';
 import {UsersModule} from "./users/user.module";
 import {AuthenticationModule} from "./authentication/authentication.module";
-import { PostsModule } from './posts/posts.module';
-import { CategoriesModule } from './categories/categories.module';
+import {PostsModule} from './posts/posts.module';
+import {CategoriesModule} from './categories/categories.module';
 import {FilesModule} from "./files/file.module";
 
 @Module({
@@ -36,6 +36,10 @@ import {FilesModule} from "./files/file.module";
                 S3_BUCKET: Joi.string().required(),
                 S3_ACCESS_KEY: Joi.string().required(),
                 S3_ENDPOINT: Joi.string().required(),
+                JWT_ACCESS_TOKEN_SECRET: Joi.string().required(),
+                JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
+                JWT_REFRESH_TOKEN_SECRET: Joi.string().required(),
+                JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
             })
         }),
         UsersModule,
@@ -47,4 +51,5 @@ import {FilesModule} from "./files/file.module";
     controllers: [AppController],
     providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+}

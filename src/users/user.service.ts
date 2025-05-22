@@ -34,6 +34,19 @@ export class UsersService {
         throw new HttpException('User with this id does not exist', HttpStatus.NOT_FOUND);
     }
 
+    async getUserIfRefreshTokenMatches(refreshToken: string, userId: number) {
+        const user = await this.getById(userId);
+
+        const isRefreshTokenMatching = await bcrypt.compare(
+            refreshToken,
+            user.currentHashedRefreshToken
+        );
+
+        if (isRefreshTokenMatching) {
+            return user;
+        }
+    }
+
     async addAvatar(userId: number, imageBuffer: Buffer, filename: string) {
         const avatar = await this.filesService.uploadPublicFile(imageBuffer, filename);
         const user = await this.getById(userId);
@@ -62,5 +75,4 @@ export class UsersService {
             currentHashedRefreshToken: null,
         });
     }
-
 }
