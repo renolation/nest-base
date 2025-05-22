@@ -6,12 +6,15 @@ import {InjectRepository} from "@nestjs/typeorm";
 import {Repository} from "typeorm";
 import Post from './entities/post.entity';
 import {PostNotFoundException} from "./exception/postNotFound.exception";
+import PostsSearchService from "./postsSearch.service";
+import {In} from "typeorm";
 
 @Injectable()
 export class PostsService {
 
     constructor(
         @InjectRepository(Post) private repo: Repository<Post>,
+        private postsSearchService: PostsSearchService
     ) {
     }
 
@@ -23,6 +26,19 @@ export class PostsService {
         await this.repo.save(newPost);
         return newPost;
     }
+
+    async searchForPosts(text: string) {
+        const results = await this.postsSearchService.search(text);
+        const ids = results.flatMap(result => result.hits.hits.map(hit => hit._source.id));
+        if (!ids.length) {
+            return [];
+        }
+        return this.repo
+            .find({
+                where: {id: In(ids)}
+            });
+    }
+
 
 
     getAllPosts() {
@@ -64,11 +80,26 @@ export class PostsService {
         return `This action returns a #${id} post`;
     }
 
-    update(id: number, updatePostDto: UpdatePostDto) {
-        return `This action updates a #${id} post`;
+    async update(id: number, post: UpdatePostDto) {
+        await this.repo.update(id, post);
+        const updatedPost = await this.repo.findOne({
+            where: {id},
+            relations: {
+                author: true,
+            }
+        });
+        if (updatedPost) {
+            await this.postsSearchService.update(updatedPost);
+            return updatedPost;
+        }
+        throw new PostNotFoundException(id);
     }
 
-    remove(id: number) {
-        return `This action removes a #${id} post`;
+    async remove(id: number) {
+        const deleteResponse = await this.repo.delete(id);
+        if (!deleteResponse.affected) {
+            throw new PostNotFoundException(id);
+        }
+        await this.postsSearchService.remove(id);
     }
 }

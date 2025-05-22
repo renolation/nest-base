@@ -1,4 +1,16 @@
-import {Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req} from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Post,
+    Body,
+    Patch,
+    Param,
+    Delete,
+    UseGuards,
+    Req,
+    Query,
+    ClassSerializerInterceptor, UseInterceptors
+} from '@nestjs/common';
 import {PostsService} from './posts.service';
 import {CreatePostDto} from './dto/create-post.dto';
 import {UpdatePostDto} from './dto/update-post.dto';
@@ -6,6 +18,7 @@ import JwtAuthenticationGuard from "../authentication/jwt-authentication.guard";
 import RequestWithUser from "../authentication/requestWithUser.interface";
 
 @Controller('posts')
+@UseInterceptors(ClassSerializerInterceptor)
 export class PostsController {
     constructor(private readonly postsService: PostsService) {
     }
@@ -14,6 +27,15 @@ export class PostsController {
     @UseGuards(JwtAuthenticationGuard)
     async createPost(@Body() post: CreatePostDto, @Req() req: RequestWithUser) {
         return this.postsService.createPost(post, req.user);
+    }
+
+
+    @Get()
+    async getPosts(@Query('search') search: string) {
+        if (search) {
+            return this.postsService.searchForPosts(search);
+        }
+        return this.postsService.getAllPosts();
     }
 
     @Get()
