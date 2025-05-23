@@ -39,7 +39,7 @@ export class PostsService {
             });
     }
 
-    
+
 
     async getAllPosts(offset?: number, limit?: number, startId = 0) {
 
