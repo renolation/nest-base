@@ -3,6 +3,7 @@ import {ElasticsearchService} from '@nestjs/elasticsearch';
 import Post from "./entities/post.entity";
 import {PostSearchResult} from "./types/postSearchResult.interface";
 import {PostSearchBody} from "./types/postSearchBody.interface";
+import PostCountResult from "./types/postCountBody.interface";
 
 @Injectable()
 export default class PostsSearchService {
@@ -24,6 +25,22 @@ export default class PostsSearchService {
             }
         });
     }
+
+    async count(query: string, fields: string[]) {
+        const result = await this.elasticsearchService.count({
+            index: this.index,
+            query: {
+                multi_match: {
+                    query,
+                    fields,
+                },
+            },
+        });
+
+        return result.count;
+    }
+
+
 
     async search(text: string) {
         const result = await this.elasticsearchService.search<PostSearchResult>({
