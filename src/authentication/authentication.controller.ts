@@ -18,6 +18,7 @@ import JwtAuthenticationGuard from './jwt-authentication.guard';
 import {ApiBody} from '@nestjs/swagger';
 import LogInDto from './dto/logIn.dto';
 import {UsersService} from 'src/users/user.service';
+import JwtRefreshGuard from "./jwtRefreshGuard.guard";
 
 @Controller('authentication')
 @UseInterceptors(ClassSerializerInterceptor)
