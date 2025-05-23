@@ -6,10 +6,20 @@ import User from "../users/entities/user.entity";
 import Post from "./entities/post.entity";
 import PostsSearchService from "./postsSearch.service";
 import {SearchModule} from "../search/search.module";
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
     controllers: [PostsController],
-    imports: [TypeOrmModule.forFeature([Post]), SearchModule],
+    imports: [
+        CacheModule.register(
+            {
+                ttl: 5,
+                max: 100
+            }
+        ),
+        TypeOrmModule.forFeature([Post]),
+        SearchModule
+    ],
     providers: [PostsService, PostsSearchService],
     exports: [PostsService, PostsSearchService],
 })

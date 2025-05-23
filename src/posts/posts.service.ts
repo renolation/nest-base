@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import {Inject, Injectable} from '@nestjs/common';
 import {CreatePostDto} from './dto/create-post.dto';
 import {UpdatePostDto} from './dto/update-post.dto';
 import User from "../users/entities/user.entity";
@@ -8,14 +8,29 @@ import Post from './entities/post.entity';
 import {PostNotFoundException} from "./exception/postNotFound.exception";
 import PostsSearchService from "./postsSearch.service";
 import {In} from "typeorm";
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import {GET_POSTS_CACHE_KEY} from "./postsCacheKey.constant";
 
 @Injectable()
 export class PostsService {
 
     constructor(
         @InjectRepository(Post) private repo: Repository<Post>,
-        private postsSearchService: PostsSearchService
+        private postsSearchService: PostsSearchService,
+        @Inject(CACHE_MANAGER) private cacheManager: Cache
     ) {
+    }
+
+
+    async clearCache() {
+        // const keys: string[] = this.cacheManager.stores.keys();
+        //
+        // await Promise.all(
+        //     keys
+        //         .filter((key) => key.startsWith(GET_POSTS_CACHE_KEY))
+        //         .map((key) => this.cacheManager.del(key)) // note: 'del', not 'delete'
+        // );
     }
 
     async createPost(post: CreatePostDto, user: User) {
@@ -24,6 +39,8 @@ export class PostsService {
             author: user
         });
         await this.repo.save(newPost);
+        await this.postsSearchService.indexPost(newPost);
+        await this.clearCache();
         return newPost;
     }
 
@@ -91,6 +108,8 @@ export class PostsService {
 
         });
         if (updatedPost) {
+            await this.postsSearchService.update(updatedPost);
+            await this.clearCache();
             return updatedPost
         }
         throw new PostNotFoundException(id);
@@ -114,6 +133,7 @@ export class PostsService {
         });
         if (updatedPost) {
             await this.postsSearchService.update(updatedPost);
+            await this.clearCache();
             return updatedPost;
         }
         throw new PostNotFoundException(id);
@@ -125,5 +145,6 @@ export class PostsService {
             throw new PostNotFoundException(id);
         }
         await this.postsSearchService.remove(id);
+        await this.clearCache();
     }
 }
