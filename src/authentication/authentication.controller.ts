@@ -1,90 +1,35 @@
-import {
-    Body,
-    Req,
-    Controller,
-    HttpCode,
-    Post,
-    UseGuards,
-    Get,
-    ClassSerializerInterceptor,
-    UseInterceptors, SerializeOptions,
-} from '@nestjs/common';
-import {AuthenticationService} from './authentication.service';
-import RegisterDto from './dto/register.dto';
-import RequestWithUser from './requestWithUser.interface';
-import {LocalAuthenticationGuard} from './localAuthentication.guard';
-import JwtAuthenticationGuard from './jwt-authentication.guard';
-// import {EmailConfirmationService} from '../emailConfirmation/emailConfirmation.service';
-import {ApiBody} from '@nestjs/swagger';
-import LogInDto from './dto/logIn.dto';
-import { UsersService } from 'src/users/user.service';
+import { Body, Controller, Post, HttpCode, HttpStatus } from '@nestjs/common';
+import { AuthenticationService, LoginResponse } from './authentication.service';
+import { LoginDto } from './dto/login.dto';
 
-@Controller('authentication')
-@UseInterceptors(ClassSerializerInterceptor)
-@SerializeOptions({
-  strategy: 'excludeAll'
-})
+/**
+ * Authentication controller for handling user authentication endpoints
+ */
+@Controller('auth')
 export class AuthenticationController {
-    constructor(
-        private readonly authenticationService: AuthenticationService,
-        private readonly usersService: UsersService,
-        // private readonly emailConfirmationService: EmailConfirmationService,
-    ) {
-    }
+  constructor(private readonly authenticationService: AuthenticationService) {}
 
-    @Post('register')
-    async register(@Body() registrationData: RegisterDto) {
-        return this.authenticationService.register(registrationData);
-    }
+  /**
+   * Login endpoint for user authentication
+   * @param loginDto - Login credentials containing email and password
+   * @returns Promise<LoginResponse> - Authentication response
+   */
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() loginDto: LoginDto): Promise<LoginResponse> {
+    return this.authenticationService.login(loginDto);
+  }
 
-
-    @HttpCode(200)
-    @UseGuards(LocalAuthenticationGuard)
-    @Post('log-in')
-    @ApiBody({type: LogInDto})
-    async logIn(@Req() request: RequestWithUser) {
-        const {user} = request;
-        const accessTokenCookie = this.authenticationService.getCookieWithJwtAccessToken(
-            user.id,
-        );
-        const {
-            cookie: refreshTokenCookie,
-            token: refreshToken,
-        } = this.authenticationService.getCookieWithJwtRefreshToken(user.id);
-
-        await this.usersService.setCurrentRefreshToken(refreshToken, user.id);
-
-        request.res.setHeader('Set-Cookie', [
-            accessTokenCookie,
-            refreshTokenCookie,
-        ]);
-
-        if (user.isTwoFactorAuthenticationEnabled) {
-            return;
-        }
-
-        return user;
-    }
-
-
-    @UseGuards(JwtAuthenticationGuard)
-    @Post('log-out')
-    @HttpCode(200)
-    async logOut(@Req() request: RequestWithUser) {
-        await this.usersService.removeRefreshToken(request.user.id);
-        request.res.setHeader(
-            'Set-Cookie',
-            this.authenticationService.getCookiesForLogOut(),
-        );
-    }
-
-
-    @UseGuards(JwtAuthenticationGuard)
-    @Get()
-    authenticate(@Req() request: RequestWithUser) {
-        const user = request.user;
-        user.password = undefined;
-        return user;
-    }
-
+  /**
+   * Admin test endpoint for smoke testing
+   * @returns Object - Test response
+   */
+  @Post('admin/test')
+  @HttpCode(HttpStatus.OK)
+  async test(): Promise<{ message: string; timestamp: string }> {
+    return {
+      message: 'Authentication controller is working',
+      timestamp: new Date().toISOString(),
+    };
+  }
 }
