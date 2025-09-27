@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
+import { UserService } from '../users/user.service';
 
 /**
  * Response interface for successful login
@@ -7,9 +8,11 @@ import { LoginDto } from './dto/login.dto';
 export interface LoginResponse {
   message: string;
   user: {
+    id: string;
     email: string;
+    name: string;
   };
-  token?: string;
+  token: string;
 }
 
 /**
@@ -17,6 +20,8 @@ export interface LoginResponse {
  */
 @Injectable()
 export class AuthenticationService {
+  constructor(private readonly userService: UserService) {}
+
   /**
    * Authenticates a user with email and password
    * @param loginDto - Login credentials containing email and password
@@ -26,33 +31,33 @@ export class AuthenticationService {
   async login(loginDto: LoginDto): Promise<LoginResponse> {
     const { email, password } = loginDto;
     
-    // TODO: Implement actual user validation logic
-    // This is a placeholder implementation
-    const isValidUser = await this.validateUser(email, password);
+    if (!email || !password) {
+      throw new UnauthorizedException('Email and password are required');
+    }
     
-    if (!isValidUser) {
+    // Find user by email
+    const user = await this.userService.findUserByEmail(email);
+    
+    if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }
+    
+    // Simple password validation (in production, use bcrypt)
+    if (user.password !== password) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+    
+    // Generate a simple token (in production, use JWT)
+    const token = `auth_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     return {
       message: 'Login successful',
       user: {
-        email,
+        id: user.id,
+        email: user.email,
+        name: user.name,
       },
-      // TODO: Generate JWT token
-      token: 'placeholder-token',
+      token,
     };
-  }
-
-  /**
-   * Validates user credentials
-   * @param email - User email
-   * @param password - User password
-   * @returns Promise<boolean> - Whether credentials are valid
-   */
-  private async validateUser(email: string, password: string): Promise<boolean> {
-    // TODO: Implement actual user validation against database
-    // For now, using placeholder validation
-    return email === 'test@example.com' && password === 'password123';
   }
 }

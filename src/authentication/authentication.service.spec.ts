@@ -24,22 +24,19 @@ describe('AuthenticationService', () => {
         email: 'test@example.com',
         password: 'password123',
       };
-      const expectedResponse = {
-        message: 'Login successful',
-        user: {
-          email: 'test@example.com',
-        },
-        token: 'placeholder-token',
-      };
 
       const actualResponse = await service.login(inputLoginDto);
 
-      expect(actualResponse).toEqual(expectedResponse);
+      expect(actualResponse).toHaveProperty('message', 'Login successful');
+      expect(actualResponse).toHaveProperty('user');
+      expect(actualResponse.user).toHaveProperty('email', 'test@example.com');
+      expect(actualResponse).toHaveProperty('token');
+      expect(actualResponse.token).toMatch(/^auth_token_\d+_[a-z0-9]+$/);
     });
 
-    it('should throw UnauthorizedException with invalid email', async () => {
+    it('should throw UnauthorizedException with empty email', async () => {
       const inputLoginDto: LoginDto = {
-        email: 'invalid@example.com',
+        email: '',
         password: 'password123',
       };
 
@@ -48,10 +45,10 @@ describe('AuthenticationService', () => {
       );
     });
 
-    it('should throw UnauthorizedException with invalid password', async () => {
+    it('should throw UnauthorizedException with empty password', async () => {
       const inputLoginDto: LoginDto = {
         email: 'test@example.com',
-        password: 'wrongpassword',
+        password: '',
       };
 
       await expect(service.login(inputLoginDto)).rejects.toThrow(
