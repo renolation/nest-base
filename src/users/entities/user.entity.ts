@@ -9,7 +9,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ select: false })
   password: string;
 
   @Column()
@@ -18,10 +18,10 @@ export class User {
   @Column({ nullable: true })
   avatarUrl?: string;
 
-  @Column()
+  @Column({ select: false })
   token: string;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'timestamp', nullable: true, select: false })
   tokenExpiry?: Date;
 
   @OneToMany(() => Todo, (todo) => todo.user)
