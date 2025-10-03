@@ -49,7 +49,16 @@ export class AuthenticationService {
     
     // Generate a simple token (in production, use JWT)
     const token = `auth_token_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
+    // Update user with new token and expiry
+    const tokenExpiry = new Date();
+    tokenExpiry.setDate(tokenExpiry.getDate() + 365); // Token valid for 1 year
+
+    await this.userService.updateUser(user.id, {
+      token,
+      tokenExpiry,
+    });
+
     return {
       message: 'Login successful',
       user: {

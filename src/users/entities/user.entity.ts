@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Todo } from '../../todo/entities/todo.entity';
 
 @Entity('users')
 export class User {
@@ -22,6 +23,9 @@ export class User {
 
   @Column({ type: 'timestamp', nullable: true })
   tokenExpiry?: Date;
+
+  @OneToMany(() => Todo, (todo) => todo.user)
+  todos: Todo[];
 
   @CreateDateColumn()
   createdAt: Date;
